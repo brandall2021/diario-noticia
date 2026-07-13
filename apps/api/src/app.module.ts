@@ -9,6 +9,7 @@ import { UsersModule } from './modules/users/users.module';
 import { CategoriesModule } from './modules/categories/categories.module';
 import { TagsModule } from './modules/tags/tags.module';
 import { MediaModule } from './modules/media/media.module';
+import { NewsModule } from './modules/news/news.module';
 import { JwtAuthGuard } from './modules/auth/guards/jwt-auth.guard';
 import { RolesGuard } from './modules/auth/guards/roles.guard';
 import { FileStorageService } from './common/services/file-storage.service';
@@ -26,6 +27,7 @@ import minioConfig from './config/minio.config';
     CategoriesModule,
     TagsModule,
     MediaModule,
+    NewsModule,
   ],
   controllers: [AppController],
   providers: [
