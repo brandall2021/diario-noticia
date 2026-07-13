@@ -17,6 +17,8 @@ import { SubscriptionsModule } from './modules/subscriptions/subscriptions.modul
 import { ElasticsearchModule } from './common/elasticsearch/elasticsearch.module';
 import { SeoModule } from './modules/seo/seo.module';
 import { AiModule } from './modules/ai/ai.module';
+import { RssModule } from './modules/rss/rss.module';
+import { SocialModule } from './modules/social/social.module';
 import { JwtAuthGuard } from './modules/auth/guards/jwt-auth.guard';
 import { RolesGuard } from './modules/auth/guards/roles.guard';
 import { FileStorageService } from './common/services/file-storage.service';
@@ -49,6 +51,8 @@ import minioConfig from './config/minio.config';
     ElasticsearchModule,
     SeoModule,
     AiModule,
+    RssModule,
+    SocialModule,
   ],
   controllers: [AppController],
   providers: [
