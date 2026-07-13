@@ -5,6 +5,7 @@ export interface User {
   lastName: string;
   avatar?: string;
   role: Role;
+  isActive: boolean;
 }
 
 export interface Role {
@@ -71,6 +72,7 @@ export interface Comment {
   author?: User;
   guestName?: string;
   guestEmail?: string;
+  article?: { id: string; title: string };
   _count?: {
     likes: number;
     replies: number;

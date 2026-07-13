@@ -152,3 +152,8 @@ Task 4-8: complete (verification pass, build OK)
 
 **Build:** `next build` compiles successfully (7 routes, TypeScript passes)
 **Known:** API 404 errors during SSG are expected when backend is not running at build time
+Task 4-8: complete (commit af842a6, review clean)
+Task 5-1: complete (commits 04360de + 86512ee, review clean)
+Task 5-2: complete (commit cfcf894, review clean)
+Task 5-3: complete (commit 2310ebc, review clean)
+Task 5-4: complete (commit 2465df8, review clean)

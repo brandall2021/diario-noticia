@@ -29,7 +29,6 @@ const menuItems: MenuItem[] = [
   { href: '/', label: 'Dashboard', icon: LayoutDashboard },
   { href: '/articulos', label: 'Artículos', icon: FileText },
   { href: '/categorias', label: 'Categorías', icon: Tag },
-  { href: '/etiquetas', label: 'Etiquetas', icon: Hash },
   { href: '/usuarios', label: 'Usuarios', icon: Users, roles: ['ADMIN'] },
   { href: '/comentarios', label: 'Comentarios', icon: MessageSquare },
   { href: '/configuracion', label: 'Configuración', icon: Settings, roles: ['ADMIN'] },

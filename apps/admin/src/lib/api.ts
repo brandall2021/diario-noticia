@@ -177,6 +177,10 @@ class ApiClient {
     });
   }
 
+  async deleteComment(id: string): Promise<void> {
+    return this.request(`/comments/${id}`, { method: 'DELETE' });
+  }
+
   // Users
   async getUsers(params?: {
     page?: number;
@@ -189,6 +193,13 @@ class ApiClient {
 
     const query = searchParams.toString();
     return this.request(`/users${query ? `?${query}` : ''}`);
+  }
+
+  async updateUser(id: string, data: Partial<User>): Promise<User> {
+    return this.request(`/users/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    });
   }
 
   // Auth
