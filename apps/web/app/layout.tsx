@@ -12,6 +12,7 @@ const inter = Inter({
 const merriweather = Merriweather({
   subsets: ['latin'],
   variable: '--font-merriweather',
+  weight: ['300', '400', '700', '900'],
 });
 
 export const metadata: Metadata = {
