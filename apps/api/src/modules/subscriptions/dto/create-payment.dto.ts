@@ -1,4 +1,4 @@
-import { IsNumber, IsEnum, IsOptional, IsString, Min } from 'class-validator';
+import { IsNumber, IsEnum, IsOptional, IsString, IsObject, Min } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { PaymentMethod } from '@prisma/client';
 
@@ -24,5 +24,6 @@ export class CreatePaymentDto {
 
   @ApiPropertyOptional()
   @IsOptional()
+  @IsObject()
   metadata?: Record<string, any>;
 }

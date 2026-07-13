@@ -13,7 +13,9 @@ import { SubscriptionsService } from './subscriptions.service';
 import { CreateSubscriptionDto } from './dto/create-subscription.dto';
 import { CreatePaymentDto } from './dto/create-payment.dto';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
+import { Roles } from '../../common/decorators/roles.decorator';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { RolesGuard } from '../auth/guards/roles.guard';
 
 @ApiTags('subscriptions')
 @Controller('subscriptions')
@@ -36,6 +38,22 @@ export class SubscriptionsController {
   @ApiOperation({ summary: 'Get current user subscriptions' })
   findMySubscriptions(@CurrentUser('id') userId: string) {
     return this.subscriptionsService.findByUser(userId);
+  }
+
+  @Get('admin/all')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('ADMIN')
+  @ApiOperation({ summary: 'Get all subscriptions (admin)' })
+  getAllSubscriptions() {
+    return this.subscriptionsService.getAllSubscriptions();
+  }
+
+  @Get('admin/stats')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('ADMIN')
+  @ApiOperation({ summary: 'Get subscription stats (admin)' })
+  getStats() {
+    return this.subscriptionsService.getStats();
   }
 
   @Get(':id')
@@ -68,17 +86,5 @@ export class SubscriptionsController {
   @ApiOperation({ summary: 'Get subscription payments' })
   getPayments(@Param('id') id: string) {
     return this.subscriptionsService.getPayments(id);
-  }
-
-  @Get('admin/all')
-  @ApiOperation({ summary: 'Get all subscriptions (admin)' })
-  getAllSubscriptions() {
-    return this.subscriptionsService.getAllSubscriptions();
-  }
-
-  @Get('admin/stats')
-  @ApiOperation({ summary: 'Get subscription stats (admin)' })
-  getStats() {
-    return this.subscriptionsService.getStats();
   }
 }
