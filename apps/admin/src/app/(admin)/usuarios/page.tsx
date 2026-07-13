@@ -1,9 +1,10 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import DataTable from '@/components/DataTable';
 import { api } from '@/lib/api';
 import { User } from '@/lib/types';
+import { Search, Users as UsersIcon, Shield, UserCheck, UserX } from 'lucide-react';
 
 const roleLabels: Record<string, string> = {
   ADMIN: 'Admin',
@@ -19,9 +20,13 @@ const roleColors: Record<string, string> = {
   SUBSCRIBER: 'bg-green-100 text-green-800',
 };
 
+const roleFilters = ['Todos', 'ADMIN', 'EDITOR', 'AUTHOR', 'SUBSCRIBER'];
+
 export default function UsersPage() {
   const [users, setUsers] = useState<User[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [activeRole, setActiveRole] = useState('Todos');
 
   useEffect(() => {
     loadUsers();
@@ -47,6 +52,25 @@ export default function UsersPage() {
       alert('Error al cambiar el estado del usuario');
     }
   };
+
+  const filteredUsers = useMemo(() => {
+    return users.filter((user) => {
+      const matchesSearch =
+        searchQuery === '' ||
+        `${user.firstName} ${user.lastName}`.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        user.email.toLowerCase().includes(searchQuery.toLowerCase());
+      const matchesRole = activeRole === 'Todos' || user.role.name === activeRole;
+      return matchesSearch && matchesRole;
+    });
+  }, [users, searchQuery, activeRole]);
+
+  const stats = useMemo(() => {
+    return {
+      total: users.length,
+      active: users.filter((u) => u.isActive).length,
+      admins: users.filter((u) => u.role.name === 'ADMIN').length,
+    };
+  }, [users]);
 
   const columns = [
     {
@@ -87,6 +111,71 @@ export default function UsersPage() {
     <div>
       <div className="mb-6">
         <h1 className="text-2xl font-bold">Usuarios</h1>
+        <p className="mt-1 text-sm text-gray-500">Gestionar usuarios y permisos del sistema</p>
+      </div>
+
+      <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-3">
+        <div className="rounded-lg bg-white p-4 shadow-sm">
+          <div className="flex items-center gap-3">
+            <div className="rounded-lg bg-blue-100 p-2">
+              <UsersIcon className="h-5 w-5 text-blue-600" />
+            </div>
+            <div>
+              <p className="text-sm text-gray-500">Total usuarios</p>
+              <p className="text-xl font-bold">{stats.total}</p>
+            </div>
+          </div>
+        </div>
+        <div className="rounded-lg bg-white p-4 shadow-sm">
+          <div className="flex items-center gap-3">
+            <div className="rounded-lg bg-green-100 p-2">
+              <UserCheck className="h-5 w-5 text-green-600" />
+            </div>
+            <div>
+              <p className="text-sm text-gray-500">Activos</p>
+              <p className="text-xl font-bold">{stats.active}</p>
+            </div>
+          </div>
+        </div>
+        <div className="rounded-lg bg-white p-4 shadow-sm">
+          <div className="flex items-center gap-3">
+            <div className="rounded-lg bg-red-100 p-2">
+              <Shield className="h-5 w-5 text-red-600" />
+            </div>
+            <div>
+              <p className="text-sm text-gray-500">Administradores</p>
+              <p className="text-xl font-bold">{stats.admins}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div className="relative flex-1 max-w-md">
+          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+          <input
+            type="text"
+            placeholder="Buscar por nombre o email..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full rounded-lg border border-gray-300 py-2 pl-10 pr-4 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
+          />
+        </div>
+        <div className="flex gap-1 rounded-lg bg-gray-100 p-1">
+          {roleFilters.map((role) => (
+            <button
+              key={role}
+              onClick={() => setActiveRole(role)}
+              className={`rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${
+                activeRole === role
+                  ? 'bg-white text-gray-900 shadow-sm'
+                  : 'text-gray-600 hover:text-gray-900'
+              }`}
+            >
+              {role === 'Todos' ? 'Todos' : roleLabels[role] || role}
+            </button>
+          ))}
+        </div>
       </div>
 
       {isLoading ? (
@@ -94,7 +183,7 @@ export default function UsersPage() {
       ) : (
         <DataTable
           columns={columns}
-          data={users}
+          data={filteredUsers}
           onDelete={handleToggleActive}
         />
       )}
