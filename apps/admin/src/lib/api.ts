@@ -141,6 +141,13 @@ class ApiClient {
     });
   }
 
+  async updateTag(id: string, data: Partial<Tag>): Promise<Tag> {
+    return this.request(`/tags/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    });
+  }
+
   async deleteTag(id: string): Promise<void> {
     return this.request(`/tags/${id}`, { method: 'DELETE' });
   }
