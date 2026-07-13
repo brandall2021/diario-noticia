@@ -202,6 +202,24 @@ class ApiClient {
     });
   }
 
+  // Media
+  async getMedia(): Promise<import('./types').Media[]> {
+    return this.request('/media');
+  }
+
+  async deleteMedia(id: string): Promise<void> {
+    return this.request(`/media/${id}`, { method: 'DELETE' });
+  }
+
+  // Newsletter
+  async getNewsletterSubscribers(): Promise<Array<{ id: string; email: string; name?: string; isActive: boolean; createdAt: string }>> {
+    return this.request('/newsletter/subscribers');
+  }
+
+  async getNewsletterStats(): Promise<{ total: number; active: number; inactive: number }> {
+    return this.request('/newsletter/stats');
+  }
+
   // Auth
   async login(email: string, password: string): Promise<{ user: User; token: string }> {
     return this.request('/auth/login', {

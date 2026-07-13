@@ -93,6 +93,17 @@ export interface PaginatedResponse<T> {
   limit: number;
 }
 
+export interface Media {
+  id: string;
+  url: string;
+  thumbnailUrl?: string;
+  originalName: string;
+  type: string;
+  size: number;
+  alt?: string;
+  createdAt: string;
+}
+
 export interface ApiResponse<T> {
   data?: T;
   message?: string;

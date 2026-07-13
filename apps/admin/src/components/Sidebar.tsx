@@ -15,6 +15,8 @@ import {
   X,
   Newspaper,
   Hash,
+  Image,
+  Mail,
 } from 'lucide-react';
 import { useAdminAuth } from '@/contexts/AdminAuthContext';
 
@@ -31,6 +33,8 @@ const menuItems: MenuItem[] = [
   { href: '/categorias', label: 'Categorías', icon: Tag },
   { href: '/usuarios', label: 'Usuarios', icon: Users, roles: ['ADMIN'] },
   { href: '/comentarios', label: 'Comentarios', icon: MessageSquare },
+  { href: '/media', label: 'Medios', icon: Image },
+  { href: '/newsletter', label: 'Newsletter', icon: Mail },
   { href: '/configuracion', label: 'Configuración', icon: Settings, roles: ['ADMIN'] },
 ];
 
