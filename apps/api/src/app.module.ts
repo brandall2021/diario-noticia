@@ -17,6 +17,7 @@ import { ElasticsearchModule } from './common/elasticsearch/elasticsearch.module
 import { JwtAuthGuard } from './modules/auth/guards/jwt-auth.guard';
 import { RolesGuard } from './modules/auth/guards/roles.guard';
 import { FileStorageService } from './common/services/file-storage.service';
+import { CacheService } from './common/services/cache.service';
 import minioConfig from './config/minio.config';
 
 @Module({
@@ -41,6 +42,7 @@ import minioConfig from './config/minio.config';
   providers: [
     AppService,
     FileStorageService,
+    CacheService,
     {
       provide: APP_GUARD,
       useClass: JwtAuthGuard,
@@ -50,5 +52,6 @@ import minioConfig from './config/minio.config';
       useClass: RolesGuard,
     },
   ],
+  exports: [CacheService],
 })
 export class AppModule {}
