@@ -12,6 +12,7 @@ import { MediaModule } from './modules/media/media.module';
 import { NewsModule } from './modules/news/news.module';
 import { CommentsModule } from './modules/comments/comments.module';
 import { NewsletterModule } from './modules/newsletter/newsletter.module';
+import { SubscriptionsModule } from './modules/subscriptions/subscriptions.module';
 import { JwtAuthGuard } from './modules/auth/guards/jwt-auth.guard';
 import { RolesGuard } from './modules/auth/guards/roles.guard';
 import { FileStorageService } from './common/services/file-storage.service';
@@ -32,6 +33,7 @@ import minioConfig from './config/minio.config';
     NewsModule,
     CommentsModule,
     NewsletterModule,
+    SubscriptionsModule,
   ],
   controllers: [AppController],
   providers: [
