@@ -30,7 +30,7 @@ const statusLabels: Record<string, string> = {
 export default function CommentsPage() {
   const [comments, setComments] = useState<Comment[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState('');
+  const [activeTab, setActiveTab] = useState<string>(CommentStatus.PENDING);
 
   useEffect(() => {
     loadComments();
@@ -78,7 +78,7 @@ export default function CommentsPage() {
   return (
     <div>
       <div className="mb-6">
-        <h1 className="text-2xl font-bold">Comentarios</h1>
+        <h1 className="text-2xl font-bold">Moderación de comentarios</h1>
       </div>
 
       <div className="mb-6 flex gap-1 rounded-lg bg-gray-100 p-1">
