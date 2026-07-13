@@ -7,6 +7,8 @@ import { Article } from '@/lib/types';
 import CategoryBadge from '@/components/CategoryBadge';
 import Comments from '@/components/Comments';
 import ArticleCard from '@/components/ArticleCard';
+import SEOHead from '@/components/SEOHead';
+import { generateArticleSchema } from '@/lib/structuredData';
 import type { Metadata } from 'next';
 
 interface Props {
@@ -58,7 +60,21 @@ export default async function ArticlePage({ params }: Props) {
     }
   }
 
+  const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+  const articleSchema = generateArticleSchema(article, baseUrl);
+
   return (
+    <>
+    <SEOHead
+      title={article.metaTitle || article.title}
+      description={article.metaDescription || article.excerpt || article.subtitle || ''}
+      image={article.ogImage || article.media?.[0]?.url}
+      url={`${baseUrl}/articulo/${article.slug}`}
+      type="article"
+      publishedTime={article.publishedAt}
+      author={`${article.author.firstName} ${article.author.lastName}`}
+      structuredData={articleSchema}
+    />
     <div className="container-custom py-8">
       <article className="mx-auto max-w-4xl">
         {/* Header */}
@@ -167,6 +183,7 @@ export default async function ArticlePage({ params }: Props) {
         </section>
       )}
     </div>
+    </>
   );
 }
 
