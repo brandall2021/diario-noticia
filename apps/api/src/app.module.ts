@@ -8,11 +8,14 @@ import { AuthModule } from './modules/auth/auth.module';
 import { UsersModule } from './modules/users/users.module';
 import { JwtAuthGuard } from './modules/auth/guards/jwt-auth.guard';
 import { RolesGuard } from './modules/auth/guards/roles.guard';
+import { FileStorageService } from './common/services/file-storage.service';
+import minioConfig from './config/minio.config';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
+      load: [minioConfig],
     }),
     PrismaModule,
     AuthModule,
@@ -21,6 +24,7 @@ import { RolesGuard } from './modules/auth/guards/roles.guard';
   controllers: [AppController],
   providers: [
     AppService,
+    FileStorageService,
     {
       provide: APP_GUARD,
       useClass: JwtAuthGuard,
