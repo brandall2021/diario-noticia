@@ -4,6 +4,7 @@ import './globals.css';
 import { AuthProvider } from '@/contexts/AuthContext';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
+import AnalyticsProvider from '@/components/AnalyticsProvider';
 
 const inter = Inter({
   subsets: ['latin'],
@@ -31,9 +32,11 @@ export default function RootLayout({
     <html lang="es" className={`${inter.variable} ${merriweather.variable}`}>
       <body className="font-sans antialiased">
         <AuthProvider>
-          <Header />
-          <main className="min-h-screen">{children}</main>
-          <Footer />
+          <AnalyticsProvider>
+            <Header />
+            <main className="min-h-screen">{children}</main>
+            <Footer />
+          </AnalyticsProvider>
         </AuthProvider>
       </body>
     </html>

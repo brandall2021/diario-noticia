@@ -6,6 +6,7 @@ import api from '@/lib/api';
 import { Article } from '@/lib/types';
 import CategoryBadge from '@/components/CategoryBadge';
 import Comments from '@/components/Comments';
+import ArticleAnalytics from '@/components/ArticleAnalytics';
 import ArticleCard from '@/components/ArticleCard';
 import SEOHead from '@/components/SEOHead';
 import { generateArticleSchema } from '@/lib/structuredData';
@@ -65,6 +66,7 @@ export default async function ArticlePage({ params }: Props) {
 
   return (
     <>
+    <ArticleAnalytics slug={article.slug} title={article.title} category={article.category?.name} />
     <SEOHead
       title={article.metaTitle || article.title}
       description={article.metaDescription || article.excerpt || article.subtitle || ''}
