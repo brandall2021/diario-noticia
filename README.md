@@ -226,6 +226,14 @@ pnpm prisma migrate dev
 pnpm prisma db seed
 ```
 
+Esto creará:
+- **28 permisos** (users, articles, categories, media, comments, etc.)
+- **7 roles** (ADMIN, EDITOR_GENERAL, EDITOR, JOURNALIST, WRITER, SUBSCRIBER, READER)
+- **1 usuario admin** (admin@diario-noticia.com / Admin123!)
+- **10 categorías** (Política, Economía, Deportes, Sociedad, Cultura, Tecnología, Ciencia, Salud, Internacional, Espectáculos)
+- **1 artículo de ejemplo** ("Bienvenido al Diario Noticia")
+- **5 configuraciones del sistema**
+
 ### 7. Iniciar API en Desarrollo
 
 ```bash
@@ -249,6 +257,20 @@ cd apps/admin
 pnpm install
 pnpm run dev
 ```
+
+### 10. Credenciales de Admin
+
+```
+Email: admin@diario-noticia.com
+Password: Admin123!
+```
+
+### 11. Acceder a la Aplicación
+
+- **Portal Público:** http://localhost:3000
+- **Panel Admin:** http://localhost:3002
+- **API Docs (Swagger):** http://localhost:3001/docs
+- **Prisma Studio:** http://localhost:5555
 
 ---
 
