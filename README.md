@@ -65,7 +65,7 @@ Sistema web moderno, responsive y escalable para la gestión y publicación de n
 
 ### Infraestructura
 - ✅ Docker Compose para desarrollo
-- ✅ PostgreSQL como base de datos principal
+- ✅ PostgreSQL (base de datos externa)
 - ✅ Redis para cacheo y colas de mensajes
 - ✅ MinIO para almacenamiento de objetos
 - ✅ Elasticsearch para búsqueda full-text
@@ -105,7 +105,7 @@ Sistema web moderno, responsive y escalable para la gestión y publicación de n
         ▼                     ▼                     ▼
 ┌──────────────┐    ┌──────────────┐    ┌──────────────┐
 │  PostgreSQL  │    │    Redis     │    │    MinIO     │
-│    :5432     │    │    :6379     │    │   :9000      │
+│  (External)  │    │    :6379     │    │   :9000      │
 └──────────────┘    └──────────────┘    └──────────────┘
                               │
                               ▼
@@ -140,7 +140,7 @@ Sistema web moderno, responsive y escalable para la gestión y publicación de n
 ### Base de Datos & Cache
 | Tecnología | Versión | Propósito |
 |------------|---------|-----------|
-| PostgreSQL | 15 | Base de datos relacional |
+| PostgreSQL | Externa | Base de datos relacional |
 | Redis | 7.x | Cacheo y sesiones |
 | Elasticsearch | 8.x | Búsqueda full-text |
 
@@ -201,10 +201,11 @@ docker compose -f docker-compose.dev.yml up -d
 ```
 
 Esto iniciará:
-- PostgreSQL (puerto 5432)
 - Redis (puerto 6379)
 - MinIO (puerto 9000/9001)
 - Elasticsearch (puerto 9200)
+
+**Nota:** PostgreSQL está configurado como base de datos externa.
 
 ### 4. Instalar Dependencias del API
 
@@ -257,9 +258,9 @@ pnpm run dev
 
 ```bash
 # ============================================
-# BASE DE DATOS
+# BASE DE DATOS (PostgreSQL Externo)
 # ============================================
-DATABASE_URL="postgresql://diario_user:diario_password@localhost:5432/diario_noticia?schema=public"
+DATABASE_URL="postgresql://brandall:Hansol1974%2B@186.153.163.188:5432/diario?schema=public"
 
 # ============================================
 # REDIS
@@ -357,7 +358,7 @@ docker compose down
 | API | 3001 | Backend NestJS |
 | Web | 3000 | Portal público Next.js |
 | Admin | 3002 | Panel administración Next.js |
-| PostgreSQL | 5432 | Base de datos |
+| PostgreSQL | Externa | Base de datos (configurada en .env) |
 | Redis | 6379 | Cache |
 | MinIO | 9000/9001 | Almacenamiento archivos |
 | Elasticsearch | 9200 | Búsqueda |
@@ -425,14 +426,21 @@ Accede a `https://tu-ip:3000` para configurar Dokploy.
 
 ### 3. Configurar Base de Datos
 
-#### Opción A: PostgreSQL en Dokploy
-1. Ve a **Databases** → **Create Database**
-2. Tipo: **PostgreSQL**
-3. Nombre: `diario-noticia-db`
-4. Dokploy te dará las credenciales → úsalas en las variables de entorno de la API
+#### PostgreSQL Externo (Configurado)
 
-#### Opción B: PostgreSQL Externo (RDS, Supabase, etc.)
-- Simplemente usa la URL de conexión en `DATABASE_URL`
+El proyecto usa PostgreSQL externo. Configura la conexión en `.env`:
+
+```bash
+DATABASE_URL="postgresql://usuario:password@host:5432/diario?schema=public"
+```
+
+#### Verificar Conexión
+
+```bash
+# Probar conexión con Prisma
+cd apps/api
+npx prisma db push
+```
 
 ### 4. Configurar Redis
 
@@ -458,12 +466,12 @@ Accede a `https://tu-ip:3000` para configurar Dokploy.
 
 ```bash
 # ============================================
-# BASE DE DATOS (Dokploy te da estas credenciales)
+# BASE DE DATOS (PostgreSQL Externo)
 # ============================================
-DATABASE_URL="postgresql://usuario:password@dokploy-postgresql:5432/diario_noticia"
+DATABASE_URL="postgresql://brandall:Hansol1974%2B@186.153.163.188:5432/diario?schema=public"
 
 # ============================================
-# REDIS (Dokploy te da estas credenciales)
+# REDIS (Puedes usar Redis externo o Dokploy)
 # ============================================
 REDIS_URL="redis://:password@dokploy-redis:6379"
 
@@ -586,7 +594,7 @@ O ejecuta manualmente desde la terminal de Dokploy.
         ▼                  ▼                  ▼
 ┌───────────────┐   ┌───────────────┐   ┌───────────────┐
 │  PostgreSQL   │   │     Redis     │   │ Elasticsearch │
-│   (Dokploy)   │   │   (Dokploy)   │   │  (External)   │
+│  (Externo)    │   │   (Dokploy)   │   │  (External)   │
 └───────────────┘   └───────────────┘   └───────────────┘
 ```
 
@@ -882,14 +890,14 @@ docker compose ps
 ### Problema: No se conecta a PostgreSQL
 
 ```bash
-# Verificar que PostgreSQL esté corriendo
-docker compose -f docker-compose.dev.yml ps
+# Verificar conexión a PostgreSQL externo
+psql -h 186.153.163.188 -U brandall -d diario
 
-# Verificar logs
-docker compose -f docker-compose.dev.yml logs postgres
+# Verificar que el host sea accesible
+ping 186.153.163.188
 
-# Reiniciar
-docker compose -f docker-compose.dev.yml restart postgres
+# Verificar puerto
+nc -zv 186.153.163.188 5432
 ```
 
 ### Problema: Migraciones fallan

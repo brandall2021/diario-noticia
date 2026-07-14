@@ -1,25 +1,6 @@
 version: '3.9'
 
 services:
-  # PostgreSQL Database
-  postgres:
-    image: postgres:16-alpine
-    container_name: diario-postgres
-    restart: unless-stopped
-    environment:
-      POSTGRES_DB: diario_noticia
-      POSTGRES_USER: diario_user
-      POSTGRES_PASSWORD: diario_pass
-    ports:
-      - '5432:5432'
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-    healthcheck:
-      test: ['CMD-SHELL', 'pg_isready -U diario_user -d diario_noticia']
-      interval: 10s
-      timeout: 5s
-      retries: 5
-
   # Redis Cache
   redis:
     image: redis:7-alpine
@@ -75,15 +56,13 @@ services:
       - '3001:3001'
     environment:
       NODE_ENV: production
-      DATABASE_URL: postgresql://diario_user:diario_pass@postgres:5432/diario_noticia?schema=public
+      DATABASE_URL: ${DATABASE_URL}
       REDIS_HOST: redis
       REDIS_PORT: 6379
       MINIO_ENDPOINT: minio
       MINIO_PORT: 9000
       ELASTICSEARCH_NODE: http://elasticsearch:9200
     depends_on:
-      postgres:
-        condition: service_healthy
       redis:
         condition: service_healthy
       minio:
@@ -106,7 +85,6 @@ services:
       - api
 
 volumes:
-  postgres_data:
   redis_data:
   minio_data:
   elasticsearch_data:
