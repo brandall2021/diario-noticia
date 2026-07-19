@@ -1,48 +1,46 @@
-# Build stage
+# =============================================================
+# Multi-stage Dockerfile for Diario Noticia API
+# Build context: repository root (Base Directory = vacío)
+# =============================================================
+
+# --- Build stage ---
 FROM node:20-alpine AS builder
 
 WORKDIR /app
 
-# Copy package files
-COPY package.json pnpm-lock.yaml ./
+# Copy API package files
+COPY apps/api/package.json apps/api/pnpm-lock.yaml /app/
 
-# Install pnpm
-RUN corepack enable && corepack prepare pnpm@latest --activate
+# Install pnpm + dependencies
+RUN corepack enable && corepack prepare pnpm@latest --activate \
+    && pnpm install --frozen-lockfile
 
-# Install dependencies
-RUN pnpm install --frozen-lockfile
+# Copy full API source
+COPY apps/api/ /app/
 
-# Copy source code
-COPY . .
+# Generate Prisma client & build
+RUN npx prisma generate && pnpm run build
 
-# Generate Prisma client
-RUN npx prisma generate
-
-# Build application
-RUN pnpm run build
-
-# Production stage
+# --- Production stage ---
 FROM node:20-alpine AS production
+
+RUN apk add --no-cache libc6-compat
 
 WORKDIR /app
 
-# Copy package files
-COPY package.json pnpm-lock.yaml ./
+# Copy package files for prod install
+COPY apps/api/package.json apps/api/pnpm-lock.yaml ./
 
-# Install pnpm
-RUN corepack enable && corepack prepare pnpm@latest --activate
+# Install pnpm + production deps only
+RUN corepack enable && corepack prepare pnpm@latest --activate \
+    && pnpm install --prod --frozen-lockfile
 
-# Install production dependencies only
-RUN pnpm install --prod --frozen-lockfile
-
-# Copy built application
+# Copy build artifacts from builder
 COPY --from=builder /app/dist ./dist
 COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
 COPY --from=builder /app/node_modules/@prisma ./node_modules/@prisma
 COPY --from=builder /app/prisma ./prisma
 
-# Expose port
 EXPOSE 3001
 
-# Start application
 CMD ["node", "dist/main"]
