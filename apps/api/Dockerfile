@@ -12,7 +12,7 @@ WORKDIR /app
 COPY apps/api/package.json apps/api/pnpm-lock.yaml /app/
 
 # Install pnpm + dependencies
-RUN corepack enable && corepack prepare pnpm@latest --activate \
+RUN corepack enable && corepack prepare pnpm@9 --activate \
     && pnpm install --frozen-lockfile
 
 # Copy full API source
@@ -32,7 +32,7 @@ WORKDIR /app
 COPY apps/api/package.json apps/api/pnpm-lock.yaml ./
 
 # Install pnpm + production deps only
-RUN corepack enable && corepack prepare pnpm@latest --activate \
+RUN corepack enable && corepack prepare pnpm@9 --activate \
     && pnpm install --prod --frozen-lockfile
 
 # Copy build artifacts from builder
