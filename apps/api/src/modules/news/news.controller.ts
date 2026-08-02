@@ -142,4 +142,13 @@ export class NewsController {
   findAllAdmin(@Query() query: QueryNewsDto) {
     return this.newsService.findAll(query, true);
   }
+
+  @Post('admin/reindex')
+  @Roles('ADMIN', 'EDITOR_GENERAL')
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Re-index all published articles into Elasticsearch' })
+  @ApiResponse({ status: 201, description: 'Indexing completed' })
+  async reindex() {
+    return this.newsService.reindex();
+  }
 }

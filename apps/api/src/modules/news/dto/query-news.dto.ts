@@ -1,5 +1,5 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
-import { IsOptional, IsString, IsEnum, IsInt, Min, IsBoolean, IsUUID } from 'class-validator';
+import { IsOptional, IsString, IsEnum, IsInt, Min, IsBoolean } from 'class-validator';
 import { Type } from 'class-transformer';
 
 export enum NewsSortBy {
@@ -21,12 +21,12 @@ export class QueryNewsDto {
   search?: string;
 
   @ApiPropertyOptional()
-  @IsUUID()
+  @IsString()
   @IsOptional()
   categoryId?: string;
 
   @ApiPropertyOptional()
-  @IsUUID()
+  @IsString()
   @IsOptional()
   subcategoryId?: string;
 
@@ -36,7 +36,7 @@ export class QueryNewsDto {
   tag?: string;
 
   @ApiPropertyOptional()
-  @IsUUID()
+  @IsString()
   @IsOptional()
   authorId?: string;
 

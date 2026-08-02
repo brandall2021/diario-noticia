@@ -1,14 +1,65 @@
-import { Injectable, NotFoundException, ConflictException, ForbiddenException } from '@nestjs/common';
+import { Injectable, NotFoundException, ConflictException, ForbiddenException, OnModuleInit } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { CreateNewsDto } from './dto/create-news.dto';
 import { UpdateNewsDto } from './dto/update-news.dto';
 import { QueryNewsDto } from './dto/query-news.dto';
 import { generateSlug } from '../../common/helpers/slug.helper';
 import { ArticleStatus } from '@prisma/client';
+import { ElasticsearchService } from '../../common/elasticsearch/elasticsearch.service';
+
+const ARTICLE_INDEX = 'articles';
+
+const ARTICLE_MAPPINGS = {
+  properties: {
+    title: { type: 'text', boost: 3 },
+    subtitle: { type: 'text' },
+    bajada: { type: 'text' },
+    copete: { type: 'text' },
+    excerpt: { type: 'text' },
+    content: { type: 'text' },
+    slug: { type: 'keyword' },
+    categoryId: { type: 'keyword' },
+    categorySlug: { type: 'keyword' },
+    subcategoryId: { type: 'keyword' },
+    authorId: { type: 'keyword' },
+    authorName: { type: 'text' },
+    tagSlugs: { type: 'keyword' },
+    status: { type: 'keyword' },
+    isFeatured: { type: 'boolean' },
+    isSticky: { type: 'boolean' },
+    publishedAt: { type: 'date' },
+    viewCount: { type: 'integer' },
+  },
+};
 
 @Injectable()
-export class NewsService {
-  constructor(private prisma: PrismaService) {}
+export class NewsService implements OnModuleInit {
+  constructor(
+    private prisma: PrismaService,
+    private elasticsearchService: ElasticsearchService,
+  ) {}
+
+  async onModuleInit() {
+    await this.elasticsearchService.createIndex(ARTICLE_INDEX, ARTICLE_MAPPINGS);
+  }
+
+  async reindex() {
+    const articles = await this.prisma.article.findMany({
+      where: { status: 'PUBLISHED', publishedAt: { not: null } },
+      include: {
+        author: { select: { firstName: true, lastName: true } },
+        category: { select: { slug: true } },
+        tags: { select: { slug: true } },
+      },
+    });
+
+    const documents = articles.map((a) => ({
+      id: a.id,
+      body: this.buildDocument(a),
+    }));
+
+    return this.elasticsearchService.bulkIndex(ARTICLE_INDEX, documents);
+  }
 
   async create(dto: CreateNewsDto, authorId: string) {
     const slug = dto.slug || generateSlug(dto.title);
@@ -77,6 +128,9 @@ export class NewsService {
       });
     }
 
+    const indexable = await this.getIndexableArticle(article.id);
+    await this.indexArticle(indexable);
+
     return this.findOne(article.id);
   }
 
@@ -105,14 +159,6 @@ export class NewsService {
       where.status = status;
     }
 
-    if (search) {
-      where.OR = [
-        { title: { contains: search, mode: 'insensitive' } },
-        { subtitle: { contains: search, mode: 'insensitive' } },
-        { bajada: { contains: search, mode: 'insensitive' } },
-      ];
-    }
-
     if (categoryId) where.categoryId = categoryId;
     if (subcategoryId) where.subcategoryId = subcategoryId;
     if (authorId) where.authorId = authorId;
@@ -127,26 +173,67 @@ export class NewsService {
       };
     }
 
+    const include = {
+      author: {
+        select: { id: true, firstName: true, lastName: true, avatar: true },
+      },
+      category: {
+        select: { id: true, name: true, slug: true, color: true },
+      },
+      subcategory: {
+        select: { id: true, name: true, slug: true },
+      },
+      tags: {
+        select: { id: true, name: true, slug: true },
+      },
+      _count: {
+        select: { comments: true },
+      },
+    };
+
+    if (search) {
+      const esResult = await this.elasticsearchService.search({
+        index: ARTICLE_INDEX,
+        query: search,
+        fields: ['title', 'subtitle', 'bajada', 'copete', 'excerpt', 'content'],
+        from: (page - 1) * limit,
+        size: limit,
+      });
+
+      if (esResult.total > 0) {
+        const ids = esResult.hits.map((hit) => hit.id);
+        const articles = await this.prisma.article.findMany({
+          where: { ...where, id: { in: ids } },
+          include,
+        });
+
+        const byId = new Map(articles.map((a) => [a.id, a]));
+        const data = esResult.hits
+          .map((hit) => byId.get(hit.id))
+          .filter((a): a is NonNullable<typeof a> => Boolean(a));
+
+        return {
+          data,
+          meta: {
+            total: esResult.total,
+            page,
+            limit,
+            totalPages: Math.ceil(esResult.total / limit),
+          },
+        };
+      }
+
+      where.OR = [
+        { title: { contains: search, mode: 'insensitive' } },
+        { subtitle: { contains: search, mode: 'insensitive' } },
+        { bajada: { contains: search, mode: 'insensitive' } },
+      ];
+    }
+
     const [articles, total] = await Promise.all([
       this.prisma.article.findMany({
         where,
-        include: {
-          author: {
-            select: { id: true, firstName: true, lastName: true, avatar: true },
-          },
-          category: {
-            select: { id: true, name: true, slug: true, color: true },
-          },
-          subcategory: {
-            select: { id: true, name: true, slug: true },
-          },
-          tags: {
-            select: { id: true, name: true, slug: true },
-          },
-          _count: {
-            select: { comments: true },
-          },
-        },
+        include,
         orderBy: [
           { isSticky: 'desc' },
           { isFeatured: 'desc' },
@@ -466,6 +553,9 @@ export class NewsService {
       }
     }
 
+    const indexable = await this.getIndexableArticle(id);
+    await this.indexArticle(indexable);
+
     return this.findOne(id);
   }
 
@@ -482,7 +572,7 @@ export class NewsService {
       throw new ForbiddenException('You do not have permission to publish articles');
     }
 
-    return this.prisma.article.update({
+    const published = await this.prisma.article.update({
       where: { id },
       data: {
         status: 'PUBLISHED',
@@ -496,6 +586,10 @@ export class NewsService {
         tags: true,
       },
     });
+
+    await this.indexArticle(published);
+
+    return published;
   }
 
   async remove(id: string, userId: string, userRole: string) {
@@ -511,10 +605,14 @@ export class NewsService {
       throw new ForbiddenException('You do not have permission to delete this article');
     }
 
-    return this.prisma.article.update({
+    const archived = await this.prisma.article.update({
       where: { id },
       data: { status: 'ARCHIVED' },
     });
+
+    await this.elasticsearchService.deleteDocument(ARTICLE_INDEX, id);
+
+    return archived;
   }
 
   async getRelated(id: string, limit: number = 5) {
@@ -594,5 +692,50 @@ export class NewsService {
   private generateExcerpt(content: any): string {
     const text = this.extractTextFromContent(content);
     return text.substring(0, 200).trim() + (text.length > 200 ? '...' : '');
+  }
+
+  private async getIndexableArticle(id: string) {
+    return this.prisma.article.findUnique({
+      where: { id },
+      include: {
+        author: { select: { firstName: true, lastName: true } },
+        category: { select: { slug: true } },
+        tags: { select: { slug: true } },
+      },
+    });
+  }
+
+  private buildDocument(article: any) {
+    return {
+      title: article.title,
+      subtitle: article.subtitle,
+      bajada: article.bajada,
+      copete: article.copete,
+      excerpt: article.excerpt,
+      content: this.extractTextFromContent(article.content),
+      slug: article.slug,
+      categoryId: article.categoryId,
+      categorySlug: article.category?.slug,
+      subcategoryId: article.subcategoryId,
+      authorId: article.authorId,
+      authorName: article.author
+        ? `${article.author.firstName || ''} ${article.author.lastName || ''}`.trim()
+        : undefined,
+      tagSlugs: (article.tags || []).map((t: any) => t.slug),
+      status: article.status,
+      isFeatured: article.isFeatured,
+      isSticky: article.isSticky,
+      publishedAt: article.publishedAt,
+      viewCount: article.viewCount,
+    };
+  }
+
+  private async indexArticle(article: any) {
+    if (!article || article.status !== 'PUBLISHED' || !article.publishedAt) return;
+    await this.elasticsearchService.indexDocument(
+      ARTICLE_INDEX,
+      article.id,
+      this.buildDocument(article),
+    );
   }
 }

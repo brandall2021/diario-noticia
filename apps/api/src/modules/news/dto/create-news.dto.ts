@@ -5,7 +5,6 @@ import {
   IsEnum,
   IsBoolean,
   IsArray,
-  IsUUID,
   IsDateString,
   IsNumber,
   MinLength,
@@ -42,12 +41,12 @@ export class CreateNewsDto {
   content: any;
 
   @ApiPropertyOptional({ description: 'Category ID' })
-  @IsUUID()
+  @IsString()
   @IsOptional()
   categoryId?: string;
 
   @ApiPropertyOptional({ description: 'Subcategory ID' })
-  @IsUUID()
+  @IsString()
   @IsOptional()
   subcategoryId?: string;
 
@@ -122,7 +121,7 @@ export class CreateNewsDto {
 
   @ApiPropertyOptional({ description: 'Related article IDs' })
   @IsArray()
-  @IsUUID('4', { each: true })
+  @IsString({ each: true })
   @IsOptional()
   relatedArticleIds?: string[];
 }
