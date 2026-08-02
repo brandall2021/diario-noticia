@@ -6,7 +6,7 @@
 # --- Build stage ---
 FROM node:20-alpine AS builder
 
-ARG NEXT_PUBLIC_API_URL=http://diarionoticia-api-shxwvh-06deda-186-153-163-188.sslip.io:3001/api
+ARG NEXT_PUBLIC_API_URL=http://diarionoticia-api-shxwvh-06deda-186-153-163-188.sslip.io/api
 ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
 
 WORKDIR /app
