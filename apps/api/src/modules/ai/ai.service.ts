@@ -4,21 +4,59 @@ import { PrismaService } from '../../prisma/prisma.service';
 
 @Injectable()
 export class AiService {
-  private openai: OpenAI;
+  constructor(private prisma: PrismaService) {}
 
-  constructor(private prisma: PrismaService) {
-    this.openai = new OpenAI({
-      apiKey: process.env.OPENAI_API_KEY,
+  async getSettings(): Promise<Record<string, any>> {
+    const settings = await this.prisma.systemConfig.findMany({
+      where: { group: 'ai' },
     });
+
+    return settings.reduce((acc, setting) => {
+      acc[setting.key] = setting.value;
+      return acc;
+    }, {} as Record<string, any>);
+  }
+
+  async updateSettings(settings: Record<string, any>): Promise<void> {
+    await Promise.all(
+      Object.entries(settings).map(([key, value]) =>
+        this.prisma.systemConfig.upsert({
+          where: { key },
+          update: { value, group: 'ai' },
+          create: { key, value, group: 'ai' },
+        }),
+      ),
+    );
+  }
+
+  private async getApiKeyOrNull(): Promise<string | null> {
+    const settings = await this.getSettings();
+    const key = settings.openaiApiKey || process.env.OPENAI_API_KEY;
+    return key ? String(key) : null;
+  }
+
+  private async getApiKey(): Promise<string> {
+    const key = await this.getApiKeyOrNull();
+    if (!key) {
+      throw new BadRequestException('OpenAI API key not configured');
+    }
+    return key;
+  }
+
+  private async getModel(): Promise<string> {
+    const settings = await this.getSettings();
+    return String(settings.openaiModel || 'gpt-4');
+  }
+
+  private async getOpenAI(): Promise<OpenAI> {
+    return new OpenAI({ apiKey: await this.getApiKey() });
   }
 
   async generateContentSuggestions(topic: string, count: number = 5): Promise<string[]> {
-    if (!process.env.OPENAI_API_KEY) {
-      throw new BadRequestException('OpenAI API key not configured');
-    }
+    const openai = await this.getOpenAI();
 
-    const completion = await this.openai.chat.completions.create({
-      model: 'gpt-4',
+    const completion = await openai.chat.completions.create({
+      model: await this.getModel(),
       messages: [
         {
           role: 'system',
@@ -38,12 +76,10 @@ export class AiService {
   }
 
   async generateSummary(content: string, maxLength: number = 200): Promise<string> {
-    if (!process.env.OPENAI_API_KEY) {
-      throw new BadRequestException('OpenAI API key not configured');
-    }
+    const openai = await this.getOpenAI();
 
-    const completion = await this.openai.chat.completions.create({
-      model: 'gpt-4',
+    const completion = await openai.chat.completions.create({
+      model: await this.getModel(),
       messages: [
         {
           role: 'system',
@@ -66,12 +102,13 @@ export class AiService {
     reason?: string;
     suggestions?: string[];
   }> {
-    if (!process.env.OPENAI_API_KEY) {
+    const apiKey = await this.getApiKeyOrNull();
+    if (!apiKey) {
       return { approved: true };
     }
 
-    const completion = await this.openai.chat.completions.create({
-      model: 'gpt-4',
+    const completion = await new OpenAI({ apiKey }).chat.completions.create({
+      model: await this.getModel(),
       messages: [
         {
           role: 'system',
@@ -96,12 +133,13 @@ export class AiService {
   }
 
   async generateMetaDescription(content: string): Promise<string> {
-    if (!process.env.OPENAI_API_KEY) {
+    const apiKey = await this.getApiKeyOrNull();
+    if (!apiKey) {
       return content.substring(0, 160) + '...';
     }
 
-    const completion = await this.openai.chat.completions.create({
-      model: 'gpt-4',
+    const completion = await new OpenAI({ apiKey }).chat.completions.create({
+      model: await this.getModel(),
       messages: [
         {
           role: 'system',
@@ -120,12 +158,13 @@ export class AiService {
   }
 
   async suggestTags(content: string): Promise<string[]> {
-    if (!process.env.OPENAI_API_KEY) {
+    const apiKey = await this.getApiKeyOrNull();
+    if (!apiKey) {
       return [];
     }
 
-    const completion = await this.openai.chat.completions.create({
-      model: 'gpt-4',
+    const completion = await new OpenAI({ apiKey }).chat.completions.create({
+      model: await this.getModel(),
       messages: [
         {
           role: 'system',

@@ -231,6 +231,36 @@ class ApiClient {
   async getProfile(): Promise<User> {
     return this.request('/auth/me', { method: 'POST' });
   }
+
+  // Settings
+  async getSeoSettings(): Promise<Record<string, any>> {
+    return this.request('/admin/seo/settings');
+  }
+
+  async updateSeoSettings(settings: Record<string, any>): Promise<void> {
+    return this.request('/admin/seo/settings', {
+      method: 'PUT',
+      body: JSON.stringify(settings),
+    });
+  }
+
+  async getAiSettings(): Promise<Record<string, any>> {
+    return this.request('/admin/ai/settings');
+  }
+
+  async updateAiSettings(settings: Record<string, any>): Promise<void> {
+    return this.request('/admin/ai/settings', {
+      method: 'PUT',
+      body: JSON.stringify(settings),
+    });
+  }
+
+  async testAiConnection(): Promise<string[]> {
+    return this.request('/ai/suggest-content', {
+      method: 'POST',
+      body: JSON.stringify({ topic: 'noticias de prueba', count: 2 }),
+    });
+  }
 }
 
 export const api = new ApiClient(API_URL);

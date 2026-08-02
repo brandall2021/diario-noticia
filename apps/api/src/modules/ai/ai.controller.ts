@@ -1,13 +1,25 @@
-import { Controller, Post, Body } from '@nestjs/common';
+import { Controller, Post, Get, Put, Body } from '@nestjs/common';
 import { ApiTags, ApiOperation } from '@nestjs/swagger';
 import { AiService } from './ai.service';
 
 @ApiTags('ai')
-@Controller('ai')
+@Controller()
 export class AiController {
   constructor(private readonly aiService: AiService) {}
 
-  @Post('suggest-content')
+  @Get('admin/ai/settings')
+  @ApiOperation({ summary: 'Get AI settings' })
+  async getAiSettings() {
+    return this.aiService.getSettings();
+  }
+
+  @Put('admin/ai/settings')
+  @ApiOperation({ summary: 'Update AI settings' })
+  async updateAiSettings(@Body() settings: Record<string, any>) {
+    return this.aiService.updateSettings(settings);
+  }
+
+  @Post('ai/suggest-content')
   @ApiOperation({ summary: 'Get content suggestions' })
   async suggestContent(
     @Body('topic') topic: string,
@@ -16,7 +28,7 @@ export class AiController {
     return this.aiService.generateContentSuggestions(topic, count);
   }
 
-  @Post('summarize')
+  @Post('ai/summarize')
   @ApiOperation({ summary: 'Generate content summary' })
   async summarize(
     @Body('content') content: string,
@@ -25,19 +37,19 @@ export class AiController {
     return this.aiService.generateSummary(content, maxLength);
   }
 
-  @Post('moderate')
+  @Post('ai/moderate')
   @ApiOperation({ summary: 'Moderate content' })
   async moderate(@Body('content') content: string) {
     return this.aiService.moderateContent(content);
   }
 
-  @Post('meta-description')
+  @Post('ai/meta-description')
   @ApiOperation({ summary: 'Generate meta description' })
   async generateMetaDescription(@Body('content') content: string) {
     return this.aiService.generateMetaDescription(content);
   }
 
-  @Post('suggest-tags')
+  @Post('ai/suggest-tags')
   @ApiOperation({ summary: 'Suggest tags for content' })
   async suggestTags(@Body('content') content: string) {
     return this.aiService.suggestTags(content);

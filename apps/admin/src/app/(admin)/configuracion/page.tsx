@@ -2,7 +2,9 @@
 
 import { useState } from 'react';
 import { useAdminAuth } from '@/contexts/AdminAuthContext';
-import { User, Bell, Shield, Save, Eye, EyeOff } from 'lucide-react';
+import { User, Bell, Shield, Save, Eye, EyeOff, Search, Bot } from 'lucide-react';
+import SeoSettingsForm from '@/components/SeoSettingsForm';
+import AiSettingsForm from '@/components/AiSettingsForm';
 
 const roleLabels: Record<string, string> = {
   ADMIN: 'Administrador',
@@ -11,12 +13,14 @@ const roleLabels: Record<string, string> = {
   SUBSCRIBER: 'Suscriptor',
 };
 
-type SettingsTab = 'perfil' | 'notificaciones' | 'seguridad';
+type SettingsTab = 'perfil' | 'notificaciones' | 'seguridad' | 'seo' | 'ai';
 
 const tabs: { id: SettingsTab; label: string; icon: typeof User }[] = [
   { id: 'perfil', label: 'Perfil', icon: User },
   { id: 'notificaciones', label: 'Notificaciones', icon: Bell },
   { id: 'seguridad', label: 'Seguridad', icon: Shield },
+  { id: 'seo', label: 'SEO', icon: Search },
+  { id: 'ai', label: 'IA', icon: Bot },
 ];
 
 export default function SettingsPage() {
@@ -63,7 +67,7 @@ export default function SettingsPage() {
     <div>
       <div className="mb-6">
         <h1 className="text-2xl font-bold">Configuración</h1>
-        <p className="mt-1 text-sm text-gray-500">Administra tu perfil, notificaciones y seguridad</p>
+        <p className="mt-1 text-sm text-gray-500">Administra tu perfil, notificaciones, seguridad, SEO y configuración de IA</p>
       </div>
 
       <div className="flex flex-col gap-6 lg:flex-row">
@@ -251,6 +255,10 @@ export default function SettingsPage() {
               </div>
             </div>
           )}
+
+          {activeTab === 'seo' && <SeoSettingsForm />}
+
+          {activeTab === 'ai' && <AiSettingsForm />}
         </div>
       </div>
     </div>
