@@ -1,16 +1,20 @@
 # =============================================================
 # Multi-stage Dockerfile for Diario Noticia Web (Portal Público)
+# Build context: repository root (dockerContextPath = .)
 # =============================================================
 
 # --- Build stage ---
 FROM node:20-alpine AS builder
 
+ARG NEXT_PUBLIC_API_URL
+ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
+
 WORKDIR /app
 
-COPY package.json package-lock.json ./
+COPY apps/web/package.json apps/web/package-lock.json ./
 RUN npm ci
 
-COPY . ./
+COPY apps/web/ ./
 RUN npm run build
 
 # --- Production stage ---
@@ -20,10 +24,11 @@ RUN apk add --no-cache libc6-compat
 
 WORKDIR /app
 
-COPY package.json package-lock.json ./
+COPY apps/web/package.json apps/web/package-lock.json ./
 RUN npm ci --omit=dev
 
 COPY --from=builder /app/.next ./.next
+COPY --from=builder /app/next.config.js ./next.config.js
 
 ENV NODE_ENV=production
 ENV PORT=3000
