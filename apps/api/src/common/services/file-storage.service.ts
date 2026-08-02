@@ -22,7 +22,14 @@ export class FileStorageService implements OnModuleInit {
     });
 
     this.bucket = this.configService.get<string>('minio.bucket')!;
-    await this.ensureBucketExists();
+
+    try {
+      await this.ensureBucketExists();
+    } catch (error) {
+      this.logger.warn(
+        `MinIO unavailable (${(error as Error).message}). Media uploads will fail until it is reachable.`,
+      );
+    }
   }
 
   private async ensureBucketExists() {
