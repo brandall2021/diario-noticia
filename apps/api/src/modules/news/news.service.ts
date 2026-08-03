@@ -11,7 +11,7 @@ const ARTICLE_INDEX = 'articles';
 
 const ARTICLE_MAPPINGS = {
   properties: {
-    title: { type: 'text', boost: 3 },
+    title: { type: 'text' },
     subtitle: { type: 'text' },
     bajada: { type: 'text' },
     copete: { type: 'text' },
@@ -195,7 +195,7 @@ export class NewsService implements OnModuleInit {
       const esResult = await this.elasticsearchService.search({
         index: ARTICLE_INDEX,
         query: search,
-        fields: ['title', 'subtitle', 'bajada', 'copete', 'excerpt', 'content'],
+        fields: ['title^3', 'subtitle^2', 'bajada^1.5', 'copete', 'excerpt', 'content'],
         from: (page - 1) * limit,
         size: limit,
       });
