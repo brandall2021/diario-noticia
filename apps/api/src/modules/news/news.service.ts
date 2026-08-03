@@ -88,6 +88,7 @@ export class NewsService implements OnModuleInit {
         canonicalUrl: dto.canonicalUrl,
         ogImage: dto.ogImage,
         status: (dto.status as ArticleStatus) || ArticleStatus.DRAFT,
+        publishedAt: dto.status === 'PUBLISHED' ? new Date() : null,
         isFeatured: dto.isFeatured || false,
         isSticky: dto.isSticky || false,
         allowComments: dto.allowComments ?? true,
