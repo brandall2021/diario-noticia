@@ -24,7 +24,7 @@
     "prisma:studio": "prisma studio"
   },
   "dependencies": {
-    "@elastic/elasticsearch": "^9.4.2",
+    "@elastic/elasticsearch": "^8.17.0",
     "@nestjs/bull": "^11.0.4",
     "@nestjs/common": "^10.3.0",
     "@nestjs/config": "^3.2.0",
