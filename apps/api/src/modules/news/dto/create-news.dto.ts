@@ -84,8 +84,8 @@ export class CreateNewsDto {
   canonicalUrl?: string;
 
   // Publishing
-  @ApiPropertyOptional({ enum: ['DRAFT', 'IN_REVIEW', 'CORRECTION', 'APPROVED', 'SCHEDULED'] })
-  @IsEnum(['DRAFT', 'IN_REVIEW', 'CORRECTION', 'APPROVED', 'SCHEDULED'])
+  @ApiPropertyOptional({ enum: ['DRAFT', 'IN_REVIEW', 'CORRECTION', 'APPROVED', 'SCHEDULED', 'PUBLISHED'] })
+  @IsEnum(['DRAFT', 'IN_REVIEW', 'CORRECTION', 'APPROVED', 'SCHEDULED', 'PUBLISHED'])
   @IsOptional()
   status?: string;
 
