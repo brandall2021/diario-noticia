@@ -19,6 +19,7 @@ import { SeoModule } from './modules/seo/seo.module';
 import { AiModule } from './modules/ai/ai.module';
 import { RssModule } from './modules/rss/rss.module';
 import { SocialModule } from './modules/social/social.module';
+import { HarvesterModule } from './modules/harvester/harvester.module';
 import { JwtAuthGuard } from './modules/auth/guards/jwt-auth.guard';
 import { RolesGuard } from './modules/auth/guards/roles.guard';
 import { FileStorageService } from './common/services/file-storage.service';
@@ -53,6 +54,7 @@ import minioConfig from './config/minio.config';
     AiModule,
     RssModule,
     SocialModule,
+    HarvesterModule,
   ],
   controllers: [AppController],
   providers: [

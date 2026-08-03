@@ -261,6 +261,47 @@ class ApiClient {
       body: JSON.stringify({ topic: 'noticias de prueba', count: 2 }),
     });
   }
+
+  // Harvester (cosechador de noticias)
+  async getHarvestSources(): Promise<any[]> {
+    return this.request('/harvester/sources');
+  }
+
+  async createHarvestSource(data: Record<string, any>): Promise<any> {
+    return this.request('/harvester/sources', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async updateHarvestSource(id: string, data: Record<string, any>): Promise<any> {
+    return this.request(`/harvester/sources/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async deleteHarvestSource(id: string): Promise<any> {
+    return this.request(`/harvester/sources/${id}`, {
+      method: 'DELETE',
+    });
+  }
+
+  async runHarvesterAll(): Promise<any> {
+    return this.request('/harvester/run', { method: 'POST' });
+  }
+
+  async runHarvesterSource(id: string): Promise<any> {
+    return this.request(`/harvester/run/${id}`, { method: 'POST' });
+  }
+
+  async testHarvesterSource(id: string): Promise<any> {
+    return this.request(`/harvester/test/${id}`, { method: 'POST' });
+  }
+
+  async getHarvestLogs(limit: number = 20): Promise<any[]> {
+    return this.request(`/harvester/logs?limit=${limit}`);
+  }
 }
 
 export const api = new ApiClient(API_URL);

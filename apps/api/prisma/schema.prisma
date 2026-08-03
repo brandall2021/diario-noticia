@@ -140,12 +140,55 @@ model Article {
   // Internal comments for editorial workflow
   internalNotes   InternalNote[]
 
+  // Harvested articles source attribution
+  sourceUrl       String?   @unique
+  sourceName      String?
+
   @@index([slug])
   @@index([status])
   @@index([publishedAt])
   @@index([categoryId])
   @@index([authorId])
   @@index([isFeatured])
+}
+
+// ==================== NEWS HARVESTER ====================
+
+model NewsSource {
+  id                  String   @id @default(cuid())
+  name                String
+  feedUrl             String   @unique
+  websiteUrl          String?
+  categoryId          String?
+  fetchIntervalMinutes Int     @default(60)
+  maxItemsPerRun      Int      @default(5)
+  autoPublish         Boolean  @default(false)
+  enabled             Boolean  @default(true)
+  lastFetchedAt       DateTime?
+  lastItemAt          DateTime?
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  category            Category? @relation(fields: [categoryId], references: [id])
+
+  @@index([enabled])
+  @@index([categoryId])
+}
+
+model HarvestLog {
+  id           String   @id @default(cuid())
+  sourceId     String?
+  sourceName   String
+  status       String
+  itemsFound   Int      @default(0)
+  itemsImported Int     @default(0)
+  itemsSkipped Int      @default(0)
+  error        String?
+  startedAt    DateTime @default(now())
+  finishedAt   DateTime?
+
+  @@index([sourceId])
+  @@index([startedAt])
 }
 
 enum ArticleStatus {
@@ -201,6 +244,7 @@ model Category {
   // Relations
   subcategories Subcategory[]
   articles      Article[]
+  newsSources   NewsSource[]
 
   @@index([slug])
   @@index([sortOrder])

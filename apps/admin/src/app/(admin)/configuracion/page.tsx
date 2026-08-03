@@ -2,9 +2,10 @@
 
 import { useState } from 'react';
 import { useAdminAuth } from '@/contexts/AdminAuthContext';
-import { User, Bell, Shield, Save, Eye, EyeOff, Search, Bot } from 'lucide-react';
+import { User, Bell, Shield, Save, Eye, EyeOff, Search, Bot, Rss } from 'lucide-react';
 import SeoSettingsForm from '@/components/SeoSettingsForm';
 import AiSettingsForm from '@/components/AiSettingsForm';
+import HarvesterSettingsForm from '@/components/HarvesterSettingsForm';
 
 const roleLabels: Record<string, string> = {
   ADMIN: 'Administrador',
@@ -13,7 +14,7 @@ const roleLabels: Record<string, string> = {
   SUBSCRIBER: 'Suscriptor',
 };
 
-type SettingsTab = 'perfil' | 'notificaciones' | 'seguridad' | 'seo' | 'ai';
+type SettingsTab = 'perfil' | 'notificaciones' | 'seguridad' | 'seo' | 'ai' | 'harvester';
 
 const tabs: { id: SettingsTab; label: string; icon: typeof User }[] = [
   { id: 'perfil', label: 'Perfil', icon: User },
@@ -21,6 +22,7 @@ const tabs: { id: SettingsTab; label: string; icon: typeof User }[] = [
   { id: 'seguridad', label: 'Seguridad', icon: Shield },
   { id: 'seo', label: 'SEO', icon: Search },
   { id: 'ai', label: 'IA', icon: Bot },
+  { id: 'harvester', label: 'Cosechador', icon: Rss },
 ];
 
 export default function SettingsPage() {
@@ -259,6 +261,8 @@ export default function SettingsPage() {
           {activeTab === 'seo' && <SeoSettingsForm />}
 
           {activeTab === 'ai' && <AiSettingsForm />}
+
+          {activeTab === 'harvester' && <HarvesterSettingsForm />}
         </div>
       </div>
     </div>
